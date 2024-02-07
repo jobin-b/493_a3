@@ -30,7 +30,9 @@ $(document).ready(function () {
   game_screen = $("#actual-game");
   asteroid_section = $(".asteroidSection");
   // hide all other pages initially except landing page
+
   game_screen.hide();
+  game_screen.removeClass("hide");
 
   /* -------------------- ASSIGNMENT 2 SELECTORS BEGIN -------------------- */
   $(".difficulty-button").on("click", changeDifficulty);
@@ -42,6 +44,7 @@ $(document).ready(function () {
   /* --------------------- ASSIGNMENT 2 SELECTORS END --------------------- */
 
   // TODO: DEFINE YOUR JQUERY SELECTORS (FOR ASSIGNMENT 3) HERE
+  $("#start").on("click", startGame);
 
   // Example: Spawn an asteroid that travels from one border to another
   // spawn(); // Uncomment me to test out the effect!
@@ -114,6 +117,17 @@ function volumeChange() {
 /* ------------------- ASSIGNMENT 2 EVENT HANDLERS END ------------------- */
 
 // TODO: ADD MORE FUNCTIONS OR EVENT HANDLERS (FOR ASSIGNMENT 3) HERE
+
+function startGame() {
+  console.log("KEYPRESS");
+  game_screen.show();
+  $("#tutorial").hide();
+  setTimeout(() => {
+    $("#get-ready").hide();
+    
+    // TODO transition to game
+  }, 3000);
+}
 
 /* ---------------------------- GAME FUNCTIONS ----------------------------- */
 // Starter Code for randomly generating and moving an asteroid on screen

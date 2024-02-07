@@ -98,12 +98,24 @@
         <!-- =================== ASSIGNMENT 2 CODE END =================== -->
 
         <!-- Actual Game -->
-        <div id="actual-game">
+        <div id="actual-game" class="hide">
           <!-- Get Ready -->
-
+          <div id="get-ready">
+            <p id="ready-title">Get Ready!</p>
+            <img src="./src/arrowkeys.png" alt="" />
+            <p id="ready-text">Use arrow keys to move.</p>
+          </div>
           <!-- Asteroids -->
           <div class="asteroidSection"></div>
           <!-- Score Panel -->
+          <div id="scoreboard">
+            <p class="scoreboard-label">SCORE</p>
+            <p class="scoreboard-data" id="score">0</p>
+            <p class="scoreboard-label">DANGER</p>
+            <p class="scoreboard-data" id="danger">0</p>
+            <p class="scoreboard-label">LEVEL</p>
+            <p class="scoreboard-data" id="level">0</p>
+          </div>
         </div>
 
         <!-- Gameover -->
