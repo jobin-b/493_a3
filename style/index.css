@@ -55,3 +55,188 @@ button {
 }
 
 /* Add your stylings here */
+
+.hide {
+  visibility: hidden;
+}
+/* LANDING PAGE */
+
+#landing {
+  height: 100%;
+  background-image: url(../src/frontpage_background.jpg);
+  /* visibility: hidden; */
+}
+
+#header {
+  height: 100px;
+  background-color: darkslateblue;
+  border-bottom: 6px;
+  border-style: groove;
+  font-size: 100px;
+  color: white;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+#header > img {
+  height: 100%;
+}
+
+.landing-button {
+  width: 200px;
+  height: 100px;
+  background-color: darkslateblue;
+  color: white;
+}
+
+#landing-container {
+  height: calc(100% - 100px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+}
+
+#offset {
+  height: 100px;
+  width: 100%;
+}
+
+/* SETTINGS PANEL */
+
+#settings {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* visibility: hidden; */
+}
+
+#settings-panel {
+  height: 690px;
+  width: 600px;
+  background-color: darkslateblue;
+  border: 3px solid gainsboro;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#settings-panel h1 {
+  font-size: 40px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Slider style from W3 Schools */
+
+#slider-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 1;
+  -webkit-transition: 0.2s;
+  transition: opacity 0.2s;
+}
+
+.slider:hover {
+  opacity: 0.8;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04aa6d;
+  cursor: pointer;
+}
+
+#difficulty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.settings-button {
+  width: 180px;
+  height: 100px;
+  background-color: purple;
+  color: white;
+}
+
+.selected {
+  border: 5px solid yellow;
+}
+
+/* TUTORIAL PAGE */
+
+#tutorial {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: star;
+  align-items: center;
+  background-color: gainsboro;
+  /* visibility: hidden; */
+}
+
+#tutorial > h1 {
+  margin: 0;
+  font-size: 75px;
+  margin-bottom: 60px;
+}
+#tutorial p {
+  margin: 0;
+  font-size: 50px;
+}
+#tutorial-content > img {
+  width: 100px;
+}
+
+#tutorial-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.italic {
+  font-style: italic;
+}
+
+#start {
+  margin-top: 15px;
+  width: 200px;
+  height: 75px;
+}
