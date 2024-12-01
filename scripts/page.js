@@ -22,7 +22,33 @@ let UP = false;
 let DOWN = false;
 
 // TODO: ADD YOUR GLOBAL HELPER VARIABLES (IF NEEDED)
-
+let page = "landing";
+let difficulty = "normal";
+let currentPortal = 1;
+let level = 1;
+let danger = 0;
+let gameOver = false;
+let volume = 50;
+let score = 0;
+let intervals = [];
+const SPEED_CONST = 0.5;
+const ROCKET_SPEED = 5;
+const times = {
+  easy: 1000,
+  normal: 800,
+  hard: 600,
+};
+const speeds = {
+  easy: 1,
+  normal: 3,
+  hard: 5,
+};
+const dangerLevels = {
+  easy: 10,
+  normal: 20,
+  hard: 30,
+};
+let rocket;
 /* --------------------------------- MAIN ---------------------------------- */
 $(document).ready(function () {
   // jQuery selectors
@@ -45,6 +71,9 @@ $(document).ready(function () {
 
   // TODO: DEFINE YOUR JQUERY SELECTORS (FOR ASSIGNMENT 3) HERE
   $("#start").on("click", startGame);
+  $("#restart").on("click", () => {
+    $("#over").hide();
+  });
 
   // Example: Spawn an asteroid that travels from one border to another
   // spawn(); // Uncomment me to test out the effect!
@@ -53,6 +82,14 @@ $(document).ready(function () {
 /* ---------------------------- EVENT HANDLERS ----------------------------- */
 // Keydown event handler
 document.onkeydown = function (e) {
+  if (
+    page === "game" &&
+    (e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown")
+  )
+    e.preventDefault();
   if (e.key == "ArrowLeft") LEFT = true;
   if (e.key == "ArrowRight") RIGHT = true;
   if (e.key == "ArrowUp") UP = true;
@@ -68,8 +105,6 @@ document.onkeyup = function (e) {
 };
 
 /* ------------------ ASSIGNMENT 2 EVENT HANDLERS BEGIN ------------------ */
-let page = "landing";
-let difficulty = "normal";
 
 function changeDifficulty() {
   const thisDifficulty = $(this).attr("id");
@@ -79,6 +114,7 @@ function changeDifficulty() {
   $(`#${difficulty}`).removeClass("selected");
   $(this).addClass("selected");
   difficulty = thisDifficulty;
+  astProjectileSpeed = speeds[difficulty];
 }
 
 function showSettings() {
@@ -103,6 +139,7 @@ function showTutorial() {
   if (page === "landing") {
     $("#landing").addClass("hide");
     $("#tutorial").removeClass("hide");
+    $("#tutorial").show();
     page = "tutorial";
   } else {
     return;
@@ -110,7 +147,7 @@ function showTutorial() {
 }
 
 function volumeChange() {
-  const volume = $("#volume").val();
+  volume = $("#volume").val();
   $("#volume-output").html("Volume: " + volume);
 }
 
@@ -119,17 +156,258 @@ function volumeChange() {
 // TODO: ADD MORE FUNCTIONS OR EVENT HANDLERS (FOR ASSIGNMENT 3) HERE
 
 function startGame() {
+  page = "game";
   console.log("KEYPRESS");
   game_screen.show();
   $("#tutorial").hide();
   setTimeout(() => {
     $("#get-ready").hide();
-    
+    rocket = new Rocket();
+    score = 0;
+    level = 1;
+    danger = dangerLevels[difficulty];
+    $("#score").html(score);
+    $("#level").html(level);
+    $("#danger").html(danger);
+    intervals.push(setInterval(spawn, times[difficulty]));
+    intervals.push(setInterval(spawnPortal, portalOccurrence));
+    intervals.push(setInterval(spawnShield, shieldOccurrence));
+    intervals.push(setInterval(addScore, 500));
+
     // TODO transition to game
   }, 3000);
 }
 
+function endGame() {
+  gameOver = true;
+  intervals.forEach((interval) => {
+    clearInterval(interval);
+  });
+  intervals = [];
+
+  setTimeout(() => {
+    $(".curAsteroid").remove();
+    $(".curPortal").remove();
+    $(".curShield").remove();
+    $(".curRocket").remove();
+    gameOver = false;
+  }, 2000);
+
+  $("#final-score").html(score);
+  $("#landing").removeClass("hide");
+  game_screen.hide();
+  $("#over").show();
+  $("#over").removeClass("hide");
+  page = "landing";
+  level = 0;
+  danger = 0;
+  score = 0;
+  $("#level").html(level);
+  $("#danger").html(danger);
+  $("#score").html(score);
+}
+
+function addScore() {
+  score += 40;
+  $("#score").html(score);
+}
+
 /* ---------------------------- GAME FUNCTIONS ----------------------------- */
+class Rocket {
+  constructor() {
+    let objectString =
+      "<div id='r-1' class='curRocket' > <img src = 'src/player/player.gif'/></div>";
+    asteroid_section.append(objectString);
+    this.id = $("#r-1");
+    currentPortal++;
+    this.shield = false;
+    this.cur_x = 1280 / 2;
+    this.cur_y = 720 / 2;
+    this.#spawnRocket();
+    this.interval = setInterval(this.move.bind(this), 15);
+  }
+
+  crash() {
+    if (gameOver) {
+      console.log("GAME OVER");
+      return;
+    }
+    if (this.shield) {
+      this.shield = false;
+      // REMOVE SHIELD
+      this.id.find("img").attr("src", "src/player/player.gif");
+      return;
+    }
+    const audio = new Audio("src/audio/die.mp3");
+    audio.volume = volume / 100;
+    audio.play();
+    gameOver = true;
+    this.remove();
+    this.id.find("img").attr("src", "src/player/player_touched.gif");
+    endGame();
+  }
+
+  getPortal() {
+    const audio = new Audio("src/audio/collect.mp3");
+    audio.volume = volume / 100;
+    audio.play();
+    level++;
+    astProjectileSpeed += SPEED_CONST;
+    danger += 2;
+    $("#level").html(level);
+    $("#danger").html(danger);
+  }
+
+  AddShield() {
+    console.log("ADD SHIELD");
+    if (this.shield) return;
+    const audio = new Audio("src/audio/collect.mp3");
+    audio.volume = volume / 100;
+    audio.play();
+    this.shield = true;
+    this.id.find("img").attr("src", "src/player/player_shielded.gif");
+  }
+
+  move() {
+    if (LEFT) {
+      console.log("LEFT");
+      this.cur_x -= ROCKET_SPEED;
+      if (this.cur_x < 0) this.cur_x = 0;
+      if (this.shield) {
+        this.id.find("img").attr("src", "src/player/player_shielded_left.gif");
+      } else {
+        this.id.find("img").attr("src", "src/player/player_left.gif");
+      }
+    }
+    if (RIGHT) {
+      console.log("RIGHT");
+      this.cur_x += ROCKET_SPEED;
+      if (this.cur_x > 1280 - 40) this.cur_x = 1280 - 40;
+      if (this.shield) {
+        this.id.find("img").attr("src", "src/player/player_shielded_right.gif");
+      } else {
+        this.id.find("img").attr("src", "src/player/player_right.gif");
+      }
+    }
+    if (UP) {
+      this.cur_y -= ROCKET_SPEED;
+      if (this.cur_y < 0) this.cur_y = 0;
+      if (this.shield) {
+        this.id.find("img").attr("src", "src/player/player_shielded_up.gif");
+      } else {
+        this.id.find("img").attr("src", "src/player/player_up.gif");
+      }
+    }
+    if (DOWN) {
+      this.cur_y += ROCKET_SPEED;
+      if (this.cur_y > 720 - 40) this.cur_y = 720 - 40;
+      if (this.shield) {
+        this.id.find("img").attr("src", "src/player/player_shielded_down.gif");
+      } else {
+        this.id.find("img").attr("src", "src/player/player_down.gif");
+      }
+    }
+
+    if (!LEFT && !RIGHT && !UP && !DOWN) {
+      if (this.shield) {
+        this.id.find("img").attr("src", "src/player/player_shielded.gif");
+      } else {
+        this.id.find("img").attr("src", "src/player/player.gif");
+      }
+    }
+
+    this.id.css("top", this.cur_y);
+    this.id.css("left", this.cur_x);
+  }
+
+  #spawnRocket() {
+    this.id.css("top", this.cur_y);
+    this.id.css("left", this.cur_x);
+  }
+
+  remove() {
+    clearInterval(this.interval);
+    this.id.remove();
+  }
+}
+
+class Portal {
+  constructor() {
+    let objectString =
+      "<div id = 'p-" +
+      currentPortal +
+      "' class = 'curPortal' > <img src = 'src/port.gif'/></div>";
+    asteroid_section.append(objectString);
+    this.id = $("#p-" + currentPortal);
+    currentPortal++;
+    this.cur_x = getRandomNumber(0, 1280);
+    this.cur_y = getRandomNumber(0, 720);
+    this.#spawnPortal();
+    intervals.push(setInterval(this.checkPortal.bind(this), 15));
+  }
+
+  checkPortal() {
+    if (isColliding(rocket.id, this.id)) {
+      console.log("GOT PORTAL");
+      this.remove();
+      rocket.getPortal();
+    }
+  }
+
+  #spawnPortal() {
+    this.id.css("top", this.cur_y);
+    this.id.css("right", this.cur_x);
+  }
+
+  remove() {
+    this.id.remove();
+  }
+}
+
+function spawnPortal() {
+  let portal = new Portal();
+  setTimeout(portal.remove.bind(portal), portalGone);
+}
+
+class Shield {
+  constructor() {
+    let objectString =
+      "<div id = 's-" +
+      currentPortal +
+      "' class = 'curShield' > <img src = 'src/shield.gif'/></div>";
+    asteroid_section.append(objectString);
+    this.id = $("#s-" + currentPortal);
+    currentPortal++;
+    this.cur_x = getRandomNumber(0, 1280);
+    this.cur_y = getRandomNumber(0, 720);
+    this.#spawnShield();
+  }
+
+  #spawnShield() {
+    this.id.css("top", this.cur_y);
+    this.id.css("right", this.cur_x);
+  }
+
+  remove() {
+    console.log("REMOVE SHIELD");
+    this.id.remove();
+  }
+}
+
+function spawnShield() {
+  console.log("SPAWN SHIELD");
+  let shield = new Shield();
+  setTimeout(shield.remove.bind(shield), shieldGone);
+  intervals.push(setInterval(checkShield.bind(this, shield), 15));
+}
+
+function checkShield(shield) {
+  if (isColliding(rocket.id, shield.id)) {
+    rocket.AddShield();
+    shield.remove();
+  }
+}
+
 // Starter Code for randomly generating and moving an asteroid on screen
 class Asteroid {
   // constructs an Asteroid object
@@ -289,6 +567,10 @@ function spawn() {
 
 function spawn_helper(asteroid) {
   let astermovement = setInterval(function () {
+    if (gameOver) {
+      clearInterval(astermovement);
+      return;
+    }
     // update Asteroid position on screen
     asteroid.updatePosition();
     // determine whether Asteroid has reached its end position
@@ -296,6 +578,11 @@ function spawn_helper(asteroid) {
       // i.e. outside the game boarder
       asteroid.id.remove();
       clearInterval(astermovement);
+    }
+    if (isColliding(asteroid.id, rocket.id)) {
+      console.log("COLLISION");
+      if (rocket.shield) asteroid.id.remove();
+      rocket.crash();
     }
   }, AST_OBJECT_REFRESH_RATE);
 }
